@@ -14,7 +14,7 @@ public:
         if (!LevelInfoLayer::init(level, p1)) 
             return false;
 
-        int levelID = level->m_levelID.value();
+        int levelID = level->m_levelID.value(); // convert m_levelID to human-readable/human-expected level ID value for the API, otherwise the API will return incorrect results
 
         // Only check if level ID is valid
         if (levelID < 1) {
