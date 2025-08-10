@@ -14,8 +14,10 @@ public:
         if (!LevelInfoLayer::init(level, p1)) 
             return false;
 
+        int levelID = level->m_levelID.value();
+
         // Only check if level ID is valid
-        if (level->m_levelID < 1) {
+        if (levelID < 1) {
             log::warn("Invalid level ID!");
             return true;
         }
@@ -23,17 +25,17 @@ public:
         // Construct API URL
         auto url = fmt::format(
             "https://epilepsywarningapi.fluxitegmd.workers.dev/id/{}", 
-            level->m_levelID
+            levelID
         );
-        log::info("Checking epilepsy warning for level {}", level->m_levelID);
+        // log::info("Checking epilepsy warning for level {}", level->m_levelID);
 
         // Setup web request listener
-        m_fields->m_listener.bind([this](web::WebTask::Event* event) {
+        m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
             if (auto* response = event->getValue()) {
                 handleApiResponse(response);
             }
             else if (event->isCancelled()) {
-                log::warn("API request was cancelled");
+                log::warn("API request for {} was cancelled", levelID);
             }
             else if (auto* progress = event->getProgress()) {
                 // Optional: Handle progress updates if needed
