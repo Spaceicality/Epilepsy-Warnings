@@ -56,7 +56,7 @@ private:
             return;
         }
         
-        warningAlert = FLAlertLayer::create(
+        auto warningAlert = FLAlertLayer::create(
             "WARNING!", 
             "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
             "OK"
