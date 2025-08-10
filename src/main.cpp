@@ -7,8 +7,6 @@ using namespace geode::prelude;
 class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
         EventListener<web::WebTask> m_listener;
-        // Store alert reference to prevent premature deletion
-        FLAlertLayer* m_warningAlert = nullptr;
     };
 
 public:
@@ -58,17 +56,15 @@ private:
             return;
         }
         
-        // Create and store warning alert
-        m_fields->m_warningAlert = FLAlertLayer::create(
+        warningAlert = FLAlertLayer::create(
             "WARNING!", 
             "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
             "OK"
         );
 
-        if (m_fields->m_warningAlert) {
-            m_fields->m_warningAlert->m_scene = this; // Set the scene to prevent fade-out
+        if (warningAlert) {
             FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-            m_fields->m_warningAlert->show();
+            warningAlert->show();
         }
     }
 };
