@@ -12,5 +12,7 @@
 	"developer": "Fluxite",
 	"description": "Flags a Level that has epilepsy warnings",
 	"tags": ["online", "utility", "enhancement"],
-	"source": "https://github.com/TheFluxite/Epilepsy-Warnings"
+	"links": {
+		"community": "https://discord.gg/B8tHUnDjuy",
+		"source": "https://github.com/TheFluxite/Epilepsy-Warnings"}
 }
