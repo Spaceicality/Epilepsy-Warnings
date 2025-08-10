@@ -27,7 +27,7 @@ public:
             "https://epilepsywarningapi.fluxitegmd.workers.dev/id/{}", 
             levelID
         );
-        // log::info("Checking epilepsy warning for level {}", level->m_levelID);
+        // log::info("Checking epilepsy warning for level {}", levelID);
 
         // Setup web request listener
         m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
