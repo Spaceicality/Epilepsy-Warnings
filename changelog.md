@@ -1,3 +1,7 @@
+# v1.0.2
+
+ * Fixed Transition Bug
+
 # v1.0.1
 
  * Added GitHub Workflow Support
