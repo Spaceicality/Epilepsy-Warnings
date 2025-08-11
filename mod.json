@@ -8,7 +8,7 @@
 	},
 	"id": "fluxite.epilepsy_warnings",
 	"name": "Epilepsy Warnings",
-	"version": "v1.0.0",
+	"version": "v1.0.1",
 	"developer": "Fluxite",
 	"description": "Flags a Level that has epilepsy warnings",
 	"tags": ["online", "utility", "enhancement"],
@@ -16,3 +16,4 @@
 		"community": "https://discord.gg/B8tHUnDjuy",
 		"source": "https://github.com/TheFluxite/Epilepsy-Warnings"}
 }
+
