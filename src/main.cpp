@@ -7,8 +7,6 @@ using namespace geode::prelude;
 class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
         EventListener<web::WebTask> m_listener;
-        // Store alert reference to prevent premature deletion
-        FLAlertLayer* m_warningAlert = nullptr;
     };
 
 public:
@@ -16,8 +14,10 @@ public:
         if (!LevelInfoLayer::init(level, p1)) 
             return false;
 
+        int levelID = level->m_levelID.value(); // convert m_levelID to human-readable/human-expected level ID value for the API, otherwise the API will return incorrect results
+
         // Only check if level ID is valid
-        if (level->m_levelID < 1) {
+        if (levelID < 1) {
             log::warn("Invalid level ID!");
             return true;
         }
@@ -25,17 +25,17 @@ public:
         // Construct API URL
         auto url = fmt::format(
             "https://epilepsywarningapi.fluxitegmd.workers.dev/id/{}", 
-            level->m_levelID
+            levelID
         );
-        log::info("Checking epilepsy warning for level {}", level->m_levelID);
+        // log::info("Checking epilepsy warning for level {}", levelID);
 
         // Setup web request listener
-        m_fields->m_listener.bind([this](web::WebTask::Event* event) {
+        m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
             if (auto* response = event->getValue()) {
                 handleApiResponse(response);
             }
             else if (event->isCancelled()) {
-                log::warn("API request was cancelled");
+                log::warn("API request for {} was cancelled", levelID);
             }
             else if (auto* progress = event->getProgress()) {
                 // Optional: Handle progress updates if needed
@@ -58,17 +58,15 @@ private:
             return;
         }
         
-        // Create and store warning alert
-        m_fields->m_warningAlert = FLAlertLayer::create(
+        auto warningAlert = FLAlertLayer::create(
             "WARNING!", 
             "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
             "OK"
         );
 
-        if (m_fields->m_warningAlert) {
-            m_fields->m_warningAlert->m_scene = this; // Set the scene to prevent fade-out
+        if (warningAlert) {
             FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-            m_fields->m_warningAlert->show();
+            warningAlert->show();
         }
     }
 };
