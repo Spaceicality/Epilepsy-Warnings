@@ -66,10 +66,9 @@ private:
         
         if (warningAlert) {
             FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-        
-            // Add it to the running scene explicitly
             CCDirector::sharedDirector()->getRunningScene()->addChild(warningAlert, 1000);
         }
-
+    }
 };
+
 
