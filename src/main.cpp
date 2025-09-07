@@ -7,7 +7,6 @@ using namespace geode::prelude;
 class $modify(MyLevelInfoLayer, LevelInfoLayer) {
     struct Fields {
         EventListener<web::WebTask> m_listener;
-        bool m_shouldWarn = false;
     };
 
 public:
@@ -17,34 +16,49 @@ public:
 
         int levelID = level->m_levelID.value();
 
+        // Only check if level ID is valid
         if (levelID < 1) {
+            log::warn("Invalid level ID!");
             return true;
         }
 
+        // Construct API URL
         auto url = fmt::format(
-            "https://epilepsywarningapi.fluxitegmd.workers.dev/id/{}", 
+            "https://epilepsywarningapi.fluxitegmd.workers.dev/id/{}",
             levelID
         );
 
+        // Setup web request listener
         m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
             if (auto* response = event->getValue()) {
-                auto result = response->string().unwrapOr("false");
-                if (result == "true") {
-                    m_fields->m_shouldWarn = true;
-                }
+                handleApiResponse(response);
+            }
+            else if (event->isCancelled()) {
+                log::warn("API request for {} was cancelled", levelID);
+            }
+            else if (auto* progress = event->getProgress()) {
+                // Optional: Handle progress updates if needed
+                // log::info("Request progress: {:.0f}%", progress->downloadProgress().value_or(0.f) * 100);
             }
         });
 
+        // Send the request
         auto request = web::WebRequest();
         m_fields->m_listener.setFilter(request.get(url));
 
         return true;
     }
 
-    void onEnterTransitionDidFinish() {
-        LevelInfoLayer::onEnterTransitionDidFinish();
+private:
+    void handleApiResponse(web::WebResponse* response) {
+        auto result = response->string().unwrapOr("false");
 
-        if (m_fields->m_shouldWarn) {
+        if (result != "true") {
+            return;
+        }
+
+        // Run in main thread so the alert doesn't vanish
+        queueInMainThread([] {
             auto warningAlert = FLAlertLayer::create(
                 "WARNING!",
                 "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
@@ -55,12 +69,6 @@ public:
                 FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
                 CCDirector::sharedDirector()->getRunningScene()->addChild(warningAlert, 1000);
             }
-
-            m_fields->m_shouldWarn = false;
-        }
+        });
     }
 };
-
-
-
-
