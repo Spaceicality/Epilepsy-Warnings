@@ -57,18 +57,21 @@ private:
         if (result != "true") {
             return;
         }
-        
-        auto warningAlert = FLAlertLayer::create(
-            "WARNING!",
-            "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
-            "OK"
-        );
-        
-        if (warningAlert) {
-            FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-            CCDirector::sharedDirector()->getRunningScene()->addChild(warningAlert, 1000);
-        }
+
+        queueInMainThread([this] {
+            auto warningAlert = FLAlertLayer::create(
+                "WARNING!",
+                "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
+                "OK"
+            );
+
+            if (warningAlert) {
+                FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
+                CCDirector::sharedDirector()->getRunningScene()->addChild(warningAlert, 1000);
+            }
+        });
     }
 };
+
 
 
