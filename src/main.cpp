@@ -66,7 +66,8 @@ private:
 
         if (warningAlert) {
             FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-            warningAlert->show();
+            warningAlert::open();
         }
     }
+
 };
