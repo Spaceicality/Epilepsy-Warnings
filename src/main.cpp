@@ -1,7 +1,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/utils/web.hpp>
-#include <nlohmann/json.hpp> // for parsing database.json
+#include "json.hpp"
 
 using namespace geode::prelude;
 
@@ -87,3 +87,4 @@ private:
         }
     }
 };
+
