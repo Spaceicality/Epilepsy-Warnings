@@ -8,7 +8,7 @@
 	},
 	"id": "fluxite.epilepsy_warnings",
 	"name": "Epilepsy Warnings",
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"settings": {
 		"use-geode-notification": {
 			"type": "bool",
@@ -24,4 +24,5 @@
 		"community": "https://discord.gg/B8tHUnDjuy",
 		"source": "https://github.com/TheFluxite/Epilepsy-Warnings"}
 }
+
 
