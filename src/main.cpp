@@ -16,76 +16,66 @@ public:
             return false;
 
         int levelID = level->m_levelID.value();
-
-        // Only check if level ID is valid
         if (levelID < 1) {
             log::warn("Invalid level ID!");
             return true;
         }
 
-        // URL to your hosted database.json
+        // URL to your updated database.json
         auto url = "https://nolananderson.dev/Epilepsy-Warnings/database.json";
+        log::info("Fetching database.json from {}", url);
 
-        // Setup web request listener
         m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
             if (auto* response = event->getValue()) {
-                handleApiResponse(response, levelID);
-            }
-            else if (event->isCancelled()) {
+                auto dbString = response->string().unwrapOr("[]");
+                log::info("Fetched database.json: {}", dbString);
+
+                try {
+                    auto json = nlohmann::json::parse(dbString);
+
+                    // Check if the current levelID is in the database
+                    bool flagged = false;
+                    for (auto& entry : json) {
+                        if (entry.contains("id") && entry["id"].is_number_integer() &&
+                            entry["id"].get<int>() == levelID) {
+                            flagged = true;
+                            break;
+                        }
+                    }
+
+                    if (!flagged) {
+                        log::info("Level {} is not flagged", levelID);
+                        return;
+                    }
+
+                    log::info("Level {} is flagged, showing alert", levelID);
+
+                    // Show the warning alert on the main thread
+                    queueInMainThread([this] {
+                        auto warningAlert = FLAlertLayer::create(
+                            "WARNING!",
+                            "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
+                            "OK"
+                        );
+
+                        if (warningAlert) {
+                            FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
+                            this->addChild(warningAlert, 1000);
+                        }
+                    });
+
+                } catch (std::exception const& e) {
+                    log::error("Failed to parse database.json: {}", e.what());
+                }
+
+            } else if (event->isCancelled()) {
                 log::warn("Database request was cancelled");
-            }
-            else if (auto* progress = event->getProgress()) {
-                // Optional: log download progress
             }
         });
 
-        // Send the request
         auto request = web::WebRequest();
         m_fields->m_listener.setFilter(request.get(url));
 
         return true;
     }
-
-private:
-    void handleApiResponse(web::WebResponse* response, int levelID) {
-        auto dbString = response->string().unwrapOr("{}");
-
-        try {
-            auto json = nlohmann::json::parse(dbString);
-
-            // check if levelID is in the list
-            bool flagged = false;
-            for (auto& id : json) {
-                if (id.is_number_integer() && id.get<int>() == levelID) {
-                    flagged = true;
-                    break;
-                }
-            }
-
-            if (!flagged) {
-                return;
-            }
-
-            // Run in main thread so the alert stays visible
-            queueInMainThread([this] {
-                auto warningAlert = FLAlertLayer::create(
-                    "WARNING!",
-                    "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
-                    "OK"
-                );
-
-                if (warningAlert) {
-                    FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-
-                    // Attach to *this* LevelInfoLayer
-                    this->addChild(warningAlert, 1000);
-                }
-            });
-        }
-        catch (std::exception const& e) {
-            log::error("Failed to parse database.json: {}", e.what());
-        }
-    }
 };
-
-
