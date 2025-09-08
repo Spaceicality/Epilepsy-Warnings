@@ -1,6 +1,8 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/utils/web.hpp>
+#include <Geode/ui/Notification.hpp>
+#include <Geode/loader/SettingV3.hpp>
 #include "json.hpp"
 
 using namespace geode::prelude;
@@ -21,11 +23,13 @@ public:
             return true;
         }
 
-        // URL to your updated database.json
+        // Get the toggle from mod settings
+        bool useGeodeNotification = Mod::get()->getSettingValue<bool>("use-geode-notification");
+
         auto url = "https://nolananderson.dev/Epilepsy-Warnings/database.json";
         log::info("Fetching database.json from {}", url);
 
-        m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
+        m_fields->m_listener.bind([this, levelID, useGeodeNotification](web::WebTask::Event* event) {
             if (auto* response = event->getValue()) {
                 auto dbString = response->string().unwrapOr("[]");
                 log::info("Fetched database.json: {}", dbString);
@@ -33,7 +37,6 @@ public:
                 try {
                     auto json = nlohmann::json::parse(dbString);
 
-                    // Check if the current levelID is in the database
                     bool flagged = false;
                     for (auto& entry : json) {
                         if (entry.contains("id") && entry["id"].is_number_integer() &&
@@ -50,17 +53,26 @@ public:
 
                     log::info("Level {} is flagged, showing alert", levelID);
 
-                    // Show the warning alert on the main thread
-                    queueInMainThread([this] {
-                        auto warningAlert = FLAlertLayer::create(
-                            "WARNING!",
-                            "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
-                            "OK"
-                        );
+                    queueInMainThread([this, useGeodeNotification] {
+                        if (useGeodeNotification) {
+                            // Show Geode notification
+                            geode::Notification::create(
+                                "Epilepsy Warning!",
+                                geode::NotificationIcon::Warning,
+                                2.5f
+                            )->show();
+                        } else {
+                            // Show FLAlertLayer
+                            auto warningAlert = FLAlertLayer::create(
+                                "WARNING!",
+                                "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
+                                "OK"
+                            );
 
-                        if (warningAlert) {
-                            FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-                            this->addChild(warningAlert, 1000);
+                            if (warningAlert) {
+                                FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
+                                this->addChild(warningAlert, 1000);
+                            }
                         }
                     });
 
