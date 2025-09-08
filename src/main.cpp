@@ -1,6 +1,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/utils/web.hpp>
+#include <nlohmann/json.hpp> // for parsing database.json
 
 using namespace geode::prelude;
 
@@ -22,23 +23,19 @@ public:
             return true;
         }
 
-        // Construct API URL
-        auto url = fmt::format(
-            "https://epilepsywarningapi.fluxitegmd.workers.dev/id/{}",
-            levelID
-        );
+        // URL to your hosted database.json
+        auto url = "https://nolananderson.dev/database.json";
 
         // Setup web request listener
         m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
             if (auto* response = event->getValue()) {
-                handleApiResponse(response);
+                handleApiResponse(response, levelID);
             }
             else if (event->isCancelled()) {
-                log::warn("API request for {} was cancelled", levelID);
+                log::warn("Database request was cancelled");
             }
             else if (auto* progress = event->getProgress()) {
-                // Optional: Handle progress updates if needed
-                // log::info("Request progress: {:.0f}%", progress->downloadProgress().value_or(0.f) * 100);
+                // Optional: log download progress
             }
         });
 
@@ -50,25 +47,43 @@ public:
     }
 
 private:
-    void handleApiResponse(web::WebResponse* response) {
-        auto result = response->string().unwrapOr("false");
+    void handleApiResponse(web::WebResponse* response, int levelID) {
+        auto dbString = response->string().unwrapOr("{}");
 
-        if (result != "true") {
-            return;
-        }
+        try {
+            auto json = nlohmann::json::parse(dbString);
 
-        // Run in main thread so the alert doesn't vanish
-        queueInMainThread([] {
-            auto warningAlert = FLAlertLayer::create(
-                "WARNING!",
-                "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
-                "OK"
-            );
-
-            if (warningAlert) {
-                FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
-                CCDirector::sharedDirector()->getRunningScene()->addChild(warningAlert, 1000);
+            // check if levelID is in the list
+            bool flagged = false;
+            for (auto& id : json) {
+                if (id.is_number_integer() && id.get<int>() == levelID) {
+                    flagged = true;
+                    break;
+                }
             }
-        });
+
+            if (!flagged) {
+                return;
+            }
+
+            // Run in main thread so the alert stays visible
+            queueInMainThread([this] {
+                auto warningAlert = FLAlertLayer::create(
+                    "WARNING!",
+                    "This level is in the Epileptic Warnings Database and may contain seizure-inducing effects!",
+                    "OK"
+                );
+
+                if (warningAlert) {
+                    FMODAudioEngine::sharedEngine()->playEffect("chestClick.ogg");
+
+                    // Attach to *this* LevelInfoLayer
+                    this->addChild(warningAlert, 1000);
+                }
+            });
+        }
+        catch (std::exception const& e) {
+            log::error("Failed to parse database.json: {}", e.what());
+        }
     }
 };
