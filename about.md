@@ -6,7 +6,7 @@ Are you epileptic? Do you stream Levels on Twitch or Youtube and are scared you 
 
 Using our **Databases** the Mod checks if a Level has seizure enducing Effects and **will warn you when you view a Level inside the database**.
 
-You can view the whole database at [here](https://nolananderson.dev/Epilepsy-Warnings/database.json), and you can contribute to the database [here](https://github.com/Spaceicality/Epilepsy-Warnings/tree/database).
+You can view the whole database [here](https://nolananderson.dev/Epilepsy-Warnings/database.json), and you can contribute to the database [here](https://github.com/Spaceicality/Epilepsy-Warnings/tree/database).
 
 # Why did I modify this mod?
 
@@ -19,3 +19,4 @@ I have had epilepsy for over a year (not light sensitivity), but I hated every s
 **Geode Team** for the amazing Mod Loader
 
 **RobTop** for the amazing Game
+
