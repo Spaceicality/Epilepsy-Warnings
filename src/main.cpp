@@ -24,7 +24,7 @@ public:
         }
 
         // URL to your hosted database.json
-        auto url = "https://nolananderson.dev/database.json";
+        auto url = "https://nolananderson.dev/Epilepsy-Warnings/database.json";
 
         // Setup web request listener
         m_fields->m_listener.bind([this, levelID](web::WebTask::Event* event) {
@@ -87,4 +87,5 @@ private:
         }
     }
 };
+
 
