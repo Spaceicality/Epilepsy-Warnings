@@ -1,5 +1,5 @@
 {
-	"geode": "4.7.0",
+	"geode": "4.8.0",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
@@ -9,6 +9,14 @@
 	"id": "fluxite.epilepsy_warnings",
 	"name": "Epilepsy Warnings",
 	"version": "v1.0.2",
+	"settings": {
+		"use-geode-notification": {
+			"type": "bool",
+			"name": "Use Geode Notification",
+			"description": "If true, uses Geode notifications; otherwise, uses FLAlertLayer",
+			"default": true
+		}
+	},
 	"developer": "Fluxite",
 	"description": "Flags a Level that has epilepsy warnings",
 	"tags": ["online", "utility", "enhancement"],
